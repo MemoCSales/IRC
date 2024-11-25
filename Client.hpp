@@ -25,10 +25,12 @@ class Client {
 		int getFd() const;
 		std::string getNick() const;
 		std::string getUser() const;
+		std::string getCorrectPassword() const;
 
 		// Setters
 		void setNick(const std::string& nick);
 		void setUser(const std::string& user);
+		void setAuthenticated(bool);
 
 		// Methods
 		bool isAuthenticated() const;
@@ -100,6 +102,10 @@ std::string Client::getUser() const {
 	return _clientUserName;
 }
 
+std::string Client::getCorrectPassword() const {
+	return _correctPassword;
+}
+
 // Setters
 void Client::setNick(const std::string& nickName) {
 	_clientNick = nickName;
@@ -107,6 +113,10 @@ void Client::setNick(const std::string& nickName) {
 
 void Client::setUser(const std::string& userName) {
 	_clientUserName = userName;
+}
+
+void Client::setAuthenticated(bool flag) {
+	_authenticated = flag;
 }
 
 // Methods
