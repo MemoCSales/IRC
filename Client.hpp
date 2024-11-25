@@ -3,25 +3,32 @@
 # include "Server.hpp"
 # define DEBUG 0
 
-std::map<int, ConnectionHandler*> connections;
 
-class ConnectionHandler {
+// todo: check limited client number
+class Client {
 	private:
-		int			_clientFd;
+		int			_clientFd; // todo: size_t
 		std::string	_clientNick;
 		std::string	_clientUserName;
 		bool		_authenticated;
 		//todo: add attribute of participating channels
+		std::string _correctPassword;
 
 	public:
-		// ConnectionHandler(void);
-		ConnectionHandler(int fd);
-		// ConnectionHandler(const ConnectionHandler &other);
-		// ConnectionHandler &operator=(const ConnectionHandler &other);
-		~ConnectionHandler();
+		// Client(void);
+		Client(int fd, const std::string& correctPassword);
+		// Client(const Client &other);
+		// Client &operator=(const Client &other);
+		~Client();
 
 		// Getters
 		int getFd() const;
+		std::string getNick() const;
+		std::string getUser() const;
+
+		// Setters
+		void setNick(const std::string& nick);
+		void setUser(const std::string& user);
 
 		// Methods
 		bool isAuthenticated() const;
@@ -31,34 +38,38 @@ class ConnectionHandler {
 		bool checkPassCommand(const std::string& message);
 };
 
+std::map<int, Client*> connections;
 
-// #include "ConnectionHandler.hpp"
+void printAsciiDecimal(const std::string& str);
+
+// #include "Client.hpp"
 
 // ++++Constructor
-// ConnectionHandler::ConnectionHandler(void) {
+// Client::Client(void) {
 // 	if (DEBUG) {
-// 		std::cout << "ConnectionHandler default constructor called" << std::endl;
+// 		std::cout << "Client default constructor called" << std::endl;
 // 	}
 // }
 
 // ++++Constructor
-ConnectionHandler::ConnectionHandler(int fd) : _clientFd(fd), _authenticated(false) {
+Client::Client(int fd, const std::string& correctPassword) 
+					: _clientFd(fd), _authenticated(false), _correctPassword(correctPassword) {
 	if (DEBUG) {
-		std::cout << "ConnectionHandler parameter constructor called" << std::endl;
+		std::cout << "Client parameter constructor called" << std::endl;
 	}
 }
 
 // // Copy Constructor
-// ConnectionHandler::ConnectionHandler(const ConnectionHandler &other) : "_variable(other._variable)"{
+// Client::Client(const Client &other) : "_variable(other._variable)"{
 // 	if (DEBUG) {
-// 		std::cout << "ConnectionHandler copy constructor called" << std::endl;
+// 		std::cout << "Client copy constructor called" << std::endl;
 // 	}
 // }
 
 // // Assignment Operator
-// ConnectionHandler &ConnectionHandler::operator=(const ConnectionHandler &other) {
+// Client &Client::operator=(const Client &other) {
 // 	if (DEBUG) {
-// 		std::cout << "ConnectionHandler Assignment Operator called" << std::endl;
+// 		std::cout << "Client Assignment Operator called" << std::endl;
 // 	}
 // 	if (this != &other) {
 // 		// Copy data from other to this
@@ -67,9 +78,9 @@ ConnectionHandler::ConnectionHandler(int fd) : _clientFd(fd), _authenticated(fal
 // }
 
 // ----Destructor
-ConnectionHandler::~ConnectionHandler() {
+Client::~Client() {
 	if (DEBUG) {
-		std::cout << "ConnectionHandler destructor called" << std::endl;
+		std::cout << "Client destructor called" << std::endl;
 	}
 	close(_clientFd);
 	std::cout << "Client disconnected -> fd: " << _clientFd << std::endl;
@@ -77,19 +88,56 @@ ConnectionHandler::~ConnectionHandler() {
 
 
 // Getters
-int ConnectionHandler::getFd() const {
+int Client::getFd() const {
 	return _clientFd;
 }
 
+std::string Client::getNick() const {
+	return _clientNick;
+}
+
+std::string Client::getUser() const {
+	return _clientUserName;
+}
+
+// Setters
+void Client::setNick(const std::string& nickName) {
+	_clientNick = nickName;
+}
+
+void Client::setUser(const std::string& userName) {
+	_clientUserName = userName;
+}
 
 // Methods
-bool ConnectionHandler::isAuthenticated() const {
+bool Client::isAuthenticated() const {
 	return _authenticated;
 }
 
-void ConnectionHandler::handleRead() {
+
+void printAsciiDecimal(const std::string& str) {
+	for (size_t i = 0; i < strlen(str.c_str()); i++)
+	{
+		printf("%d " , (int)str[i]);
+	}
+	printf("\n");
+	
+}
+
+std::string trim(const std::string& str) {
+	size_t first = str.find_first_not_of("\t\n\r");
+	size_t last = str.find_last_not_of("\t\n\r");
+	if (first == std::string::npos || last == std::string::npos) {
+		return "";
+	} else {
+		return str.substr(first, last - first + 1);
+	}
+}
+
+void Client::handleRead() {
 	char buffer[1024] = {0};
 	int bytesReceived = recv(_clientFd, buffer, sizeof(buffer), 0);
+
 	if (bytesReceived == 0) {
 		std::cout << "Client desconnected -> fd: " << _clientFd << std::endl;
 	} else if (bytesReceived < 0) {
@@ -101,10 +149,42 @@ void ConnectionHandler::handleRead() {
 		std::string message(buffer, bytesReceived);
 		std::cout << "Received message from fd " << _clientFd << ": "<< message << std::endl;
 
-		// Check for PASS command
-		if (checkPassCommand(message)) {
-			std::cout << "PASS command received" << std::endl;
-			
+		std::istringstream stream(message);
+		std::string line;
+		while (std::getline(stream, line)) {
+			// std::cout << "LINE: " << line << std::endl;
+			// Check for PASS command
+			if (checkPassCommand(line)) {
+				std::cout << "PASS command received" << std::endl;
+				std::string password = line.substr(5);
+				password = trim(password);
+				// std::cout << "R password: " << password << std::endl;
+				// std::cout << "R password in ASCII decimal: ";
+				// printAsciiDecimal(password);
+				// std::cout << "E password: " << _correctPassword << std::endl;
+				// std::cout << "E password in ASCII decimal: ";
+				// printAsciiDecimal(_correctPassword);
+				if (password == _correctPassword) {
+					_authenticated = true;
+					std::cout << "Client authenticated -> fd: " << _clientFd << std::endl;
+				} else {
+					// std::cout << "Password incorrect" << std::endl;
+					std::string response = ircErrorMessages[464];
+					std::cout << response << std::endl;
+					send(_clientFd, response.c_str(), response.size(), 0);
+					close(_clientFd);
+					return ;
+				}
+			}
+			else if (line.substr(0, 4) == "NICK") {
+				std::string nick = line.substr(5);
+				setNick(trim(nick));
+				std::cout << "NICK command received. Client nickname: " << _clientNick << std::endl;
+			} else if (line.substr(0, 4) == "USER") {
+				std::string user = line.substr(5);
+				setUser(trim(user));
+				std::cout << "USER command received. Client username: " << _clientUserName << std::endl;
+			}
 		}
 
 		// Send answer to client
@@ -114,8 +194,10 @@ void ConnectionHandler::handleRead() {
 }
 
 // Function to check for the PASS command
-bool ConnectionHandler::checkPassCommand(const std::string& message) {
+bool Client::checkPassCommand(const std::string& message) {
 	const std::string passCommand = "PASS";
+	std::string line;
+	std::stringstream ss(message);
 	if (message.compare(0, passCommand.length(), passCommand) == 0) {
 		return true;
 	}

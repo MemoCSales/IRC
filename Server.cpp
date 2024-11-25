@@ -1,11 +1,16 @@
 # include "Server.hpp"
+# include "Client.hpp"
 
 void initializeIrcErrorMessages() {
-	ircErrorMessages[464] = "Password incorrect";
+	ircErrorMessages[464] = ":server 464 * :Password incorrect\r\n";
 }
 
 void sendError(int clientFd, int errorCode, const std::string& clientNick) {
-	std::string response = clientNick + " : " + std::to_string(errorCode) + " " +
+	std::stringstream ss;
+	std::string errorStr;
+	ss << errorCode;
+	errorStr = ss.str();
+	std::string response = clientNick + " : " + errorStr + " " +
 							" " + ircErrorMessages[errorCode] + "\r\n";
 	send(clientFd, response.c_str(), response.size(), 0);
 }
@@ -111,6 +116,9 @@ int main() {
 					// Configure new non blocking socket
 					setNonBlocking(clientFd);
 
+					Client* client = new Client(clientFd, PASS);
+					connections[clientFd] = client;
+
 					// Add new client to poll() list
 					struct pollfd clientPollFd = {clientFd, POLLIN, 0};
 					pollFds.push_back(clientPollFd);
@@ -119,35 +127,17 @@ int main() {
 				}
 				// If client -> read data
 				else {
-					char buffer[1024] = {0};
-					int bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
-					if (bytesReceived == 0) {
-						std::cout << "Client desconnected -> fd: " << pollFds[i].fd << std::endl;
-						close(pollFds[i].fd);
+					int clientFd = pollFds[i].fd;
+					try
+					{
+						connections[clientFd]->handleRead();
+					} catch(const std::runtime_error& e) {
+						std::cerr << e.what() << '\n';
+						close(clientFd);
+						delete connections[clientFd];
+						connections.erase(clientFd);
 						pollFds.erase(pollFds.begin() + i);
 						--i;
-					} else if (bytesReceived < 0) {
-						if (errno != EAGAIN && errno != EWOULDBLOCK) {
-							// Real error, close connection
-							perror("Error on recv");
-							close(pollFds[i].fd);
-							pollFds.erase(pollFds.begin() + i);
-							--i;
-						}
-					} else {
-						// Process message
-						std::string message(buffer, bytesReceived);
-						std::cout << "Received message: " << message << std::endl;
-
-						// Check for PASS command
-						if (checkPassCommand(message)) {
-							std::cout << "PASS command received" << std::endl;
-							
-						}
-
-						// Send answer to client
-						std::string response = "Message received\n";
-						send(pollFds[i].fd, response.c_str(), response.size(), 0);
 					}
 				}
 			}

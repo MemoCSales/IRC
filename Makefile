@@ -5,7 +5,7 @@ CPPFLAGS	 = -std=c++98
 CPPFLAGS	+= -Wall -Wextra -Werror -Wshadow -pedantic
 CPPFLAGS	+= -g
 
-SRC = serverPoll.cpp
+SRC = $(wildcard *.cpp)
 
 OBJDIR		= .obj
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))

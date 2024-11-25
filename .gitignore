@@ -4,3 +4,6 @@
 # Ignore specific directories
 .obj/
 .vscode/
+
+# binary
+/IRC
