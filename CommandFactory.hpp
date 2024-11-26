@@ -1,8 +1,10 @@
-#pragma once
-# include <map>
-# include <memory>
+#ifndef COMMAND_FACTORY_HPP
+# define COMMAND_FACTORY_HPP
+
+// # include "ICommand.hpp"
 # include "Commands.hpp"
 
+class ICommand;
 
 typedef ICommand* CommandPtr;
 
@@ -12,6 +14,7 @@ class CommandFactory {
 		std::map<std::string, CommandCreator> commands;
 	public:
 		CommandFactory();
+		~CommandFactory();
 		CommandPtr createCommand(const std::string& commandName);
 	private:
 		// static = we can call this function without creating an instance of the CommandFactory class
@@ -20,3 +23,5 @@ class CommandFactory {
 		static CommandPtr createNickCommand();
 		static CommandPtr createUserCommand();
 };
+
+#endif

@@ -7,7 +7,7 @@ void sendErrorAndCloseFd(int fd, const std::string& response) {
 	close(fd);
 }
 
-void sendReply(int fd, const std::string& response) {
+void sendReplyOrError(int fd, const std::string& response) {
 	send(fd, response.c_str(), response.size(), 0);
 }
 

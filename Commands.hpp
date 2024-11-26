@@ -1,5 +1,8 @@
-#pragma once
+#ifndef COMMANDS_HPP
+# define COMMANDS_HPP
 # include "ICommand.hpp"
+
+//todo: make less classes
 
 class PassCommand : public ICommand {
 	public:
@@ -16,3 +19,4 @@ class UserCommand : public ICommand {
 		void execute(Client& client, const std::string& args);
 };
 
+#endif

@@ -1,9 +1,10 @@
 # include "Commands.hpp"
 # include "NumericMessages.hpp"
+# include "Utils.hpp"
 
 // PASS Command
 void PassCommand::execute(Client& client, const std::string& args) {
-	std::string password = trim(args);
+	std::string password = Utils::trim(args);
 	if (password == client.getCorrectPassword()) {
 		client.setAuthenticated(true);
 		std::cout << "Client authenticated -> fd: " << client.getFd() << std::endl;
@@ -16,16 +17,15 @@ void PassCommand::execute(Client& client, const std::string& args) {
 
 
 // NICK Command
-
 void NickCommand::execute(Client& client, const std::string& args) {
-	std::string newNick = trim(args);
+	std::string newNick = Utils::trim(args);
 	std::string oldNick = client.getNick();
 	bool nickExists = false;
 
 	//todo: do the check for a valid newNickname : ERR_ERRONEUSNICKNAME 432
 
 	std::map<int, Client*>::iterator it = connections.begin();
-	for (it; it != connections.end(); it++) {
+	for (; it != connections.end(); it++) {
 		if (it->second->getNick() == newNick) {
 			nickExists = true;
 			break;
@@ -41,7 +41,7 @@ void NickCommand::execute(Client& client, const std::string& args) {
 
 		// Acknowledge the NICK command was successfull and print the new nick
 		std::string response = RPL_NICKCHANGE(oldNick, user, host, newNick);
-		sendReply(client.getFd(), response);
+		sendReplyOrError(client.getFd(), response);
 
 		// todo: Inform other clients about the nickname change
 	}
@@ -52,6 +52,6 @@ void NickCommand::execute(Client& client, const std::string& args) {
 void UserCommand::execute(Client& client, const std::string& args) {
 	//todo: extend user verification
 	// USERLEN and so on
-	std::string newUser = trim(args);
+	std::string newUser = Utils::trim(args);
 	client.setUser(newUser);
 }
