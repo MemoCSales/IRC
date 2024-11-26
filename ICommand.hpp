@@ -1,8 +1,8 @@
 #pragma once
 # include "Client.hpp"
 
-class ICommands {
+class ICommand {
 	public:
-		virtual ~ICommands() {};
+		virtual ~ICommand() {};
 		virtual void execute(Client& client, const std::string& args) = 0;
 };
