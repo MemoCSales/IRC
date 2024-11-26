@@ -1,6 +1,8 @@
 #pragma once
 
 # include "Server.hpp"
+# include "NumericMessages.hpp"
+
 # define DEBUG 0
 
 
@@ -179,7 +181,7 @@ void Client::handleRead() {
 					std::cout << "Client authenticated -> fd: " << _clientFd << std::endl;
 				} else {
 					// std::cout << "Password incorrect" << std::endl;
-					std::string response = ircErrorMessages[464];
+					std::string response = ERR_PASSWDMISMATCH;
 					std::cout << response << std::endl;
 					send(_clientFd, response.c_str(), response.size(), 0);
 					close(_clientFd);

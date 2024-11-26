@@ -19,7 +19,8 @@
 # define IRCPORT 6667
 # define PASS "42"
 
-std::map<int, std::string> ircErrorMessages;
+// std::map<int, std::string> ircErrorMessages;
 
-void initializeIrcErrorMessages();
-void sendError(int clientFd, int errorCode, const std::string& clientNick);
+// void initializeIrcErrorMessages();
+void sendErrorAndCloseFd(int fd, const std::string& response);
+void sendReply(int fd, const std::string& response);

@@ -1,18 +1,14 @@
 # include "Server.hpp"
 # include "Client.hpp"
 
-void initializeIrcErrorMessages() {
-	ircErrorMessages[464] = ":server 464 * :Password incorrect\r\n";
+
+void sendErrorAndCloseFd(int fd, const std::string& response) {
+	send(fd, response.c_str(), response.size(), 0);
+	close(fd);
 }
 
-void sendError(int clientFd, int errorCode, const std::string& clientNick) {
-	std::stringstream ss;
-	std::string errorStr;
-	ss << errorCode;
-	errorStr = ss.str();
-	std::string response = clientNick + " : " + errorStr + " " +
-							" " + ircErrorMessages[errorCode] + "\r\n";
-	send(clientFd, response.c_str(), response.size(), 0);
+void sendReply(int fd, const std::string& response) {
+	send(fd, response.c_str(), response.size(), 0);
 }
 
 // Function to check for the PASS command
@@ -42,7 +38,6 @@ int setNonBlocking(int fd) {
 
 int main() {
 
-	initializeIrcErrorMessages();
 	// Create socket
 	int serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (serverFd < 0) {
