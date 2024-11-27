@@ -1,12 +1,5 @@
-#include "Client.hpp"
+# include "Client.hpp"
 # include "Utils.hpp"
-
-// ++++Constructor
-// Client::Client(void) {
-// 	if (DEBUG) {
-// 		std::cout << "Client default constructor called" << std::endl;
-// 	}
-// }
 
 // ++++Constructor
 Client::Client(int fd, const std::string& correctPassword) 
@@ -57,6 +50,10 @@ std::string Client::getUser() const {
 	return _clientUserName;
 }
 
+std::string Client::getUserRealName() const {
+	return _clientRealName;
+}
+
 std::string Client::getCorrectPassword() const {
 	return _correctPassword;
 }
@@ -70,6 +67,10 @@ void Client::setUser(const std::string& userName) {
 	_clientUserName = userName;
 }
 
+void Client::setUserRealName(const std::string& realName) {
+	_clientRealName = realName;
+}
+
 void Client::setAuthenticated(bool flag) {
 	_authenticated = flag;
 }
@@ -78,26 +79,6 @@ void Client::setAuthenticated(bool flag) {
 bool Client::isAuthenticated() const {
 	return _authenticated;
 }
-
-
-// void printAsciiDecimal(const std::string& str) {
-// 	for (size_t i = 0; i < strlen(str.c_str()); i++)
-// 	{
-// 		printf("%d " , (int)str[i]);
-// 	}
-// 	printf("\n");
-	
-// }
-
-// std::string trim(const std::string& str) {
-// 	size_t first = str.find_first_not_of("\t\n\r");
-// 	size_t last = str.find_last_not_of("\t\n\r");
-// 	if (first == std::string::npos || last == std::string::npos) {
-// 		return "";
-// 	} else {
-// 		return str.substr(first, last - first + 1);
-// 	}
-// }
 
 void Client::handleRead() {
 	char buffer[1024] = {0};
@@ -127,6 +108,15 @@ void Client::handleRead() {
 		std::string response = "Message received\n";
 		send(_clientFd, response.c_str(), response.size(), 0);
 	}
+}
+
+
+void Client::setCapNegotiation(bool flag) {
+	_capNegotiation = flag;
+}
+
+bool Client::isCapNegotiation() const {
+	return _capNegotiation;
 }
 
 // Function to check for the PASS command

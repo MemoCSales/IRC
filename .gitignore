@@ -4,6 +4,7 @@
 # Ignore specific directories
 .obj/
 .vscode/
+allowedFunctions/
 
 # binary
 /IRC

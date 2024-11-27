@@ -16,13 +16,15 @@ void CommandParser::parseAndExecute(Client& client, const std::string& message) 
 	std::string commandName;
 	std::string args;
 
-	stream >> commandName >> args;
-	std::cout << "cmdName: " << commandName << std::endl;
-	std::cout << "Args" << args << std::endl;
-	std::cout << "Args in ascii: ";
-	Utils::printAsciiDecimal(args);
+	stream >> commandName;
 	std::getline(stream, args);
 	args = Utils::trim(args);
+	
+	std::cout << "cmdName: " << commandName << std::endl;
+	std::cout << "Args: " << args << std::endl;
+	std::cout << "Args in ascii: ";
+	Utils::printAsciiDecimal(args);
+	std::cout << "Client AUTH: " << client.isAuthenticated() << std::endl;
 
 	CommandPtr command = commandFactory->createCommand(commandName);
 	if (command) {

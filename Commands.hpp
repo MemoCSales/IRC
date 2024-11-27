@@ -7,7 +7,8 @@ enum CommandType {
 	CAP,
 	PASS,
 	NICK,
-	USER
+	USER,
+	QUIT
 };
 
 class Command : public ICommand {
@@ -17,25 +18,5 @@ class Command : public ICommand {
 		Command(CommandType type) : _type(type) {}
 		void execute(Client& client, const std::string& args);
 };
-
-// class CapCommand : public ICommand {
-// 	public:
-// 		void execute(Client& client, const std::string& args);
-// };
-
-// class PassCommand : public ICommand {
-// 	public:
-// 		void execute(Client& client, const std::string& args);
-// };
-
-// class NickCommand : public ICommand {
-// 	public:
-// 		void execute(Client& client, const std::string& args);
-// };
-
-// class UserCommand : public ICommand {
-// 	public:
-// 		void execute(Client& client, const std::string& args);
-// };
 
 #endif
