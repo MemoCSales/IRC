@@ -9,4 +9,5 @@ class ICommand {
 		virtual void execute(Client& client, const std::string& args) = 0;
 };
 
+
 #endif

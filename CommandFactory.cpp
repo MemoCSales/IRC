@@ -1,31 +1,26 @@
 # include "CommandFactory.hpp"
 
 CommandFactory::CommandFactory() {
-	commands["PASS"] = &createPassCommand;
-	commands["NICK"] = &createNickCommand;
-	commands["USER"] = &createUserCommand;
+	commands["CAP"] = new CommandCreatorImpl<Command>(CAP);
+	commands["PASS"] = new CommandCreatorImpl<Command>(PASS);
+	commands["NICK"] = new CommandCreatorImpl<Command>(NICK);
+	commands["USER"] = new CommandCreatorImpl<Command>(USER);
 	
 }
 
-CommandFactory::~CommandFactory() {}
+CommandFactory::~CommandFactory() {
+	for (std::map<std::string, CommandCreator*>::iterator it = commands.begin(); it != commands.end(); it++)
+	{
+		delete it->second;
+	}
+	
+}
 
 CommandPtr CommandFactory::createCommand(const std::string& commandName) {
 	// todo: move commands map here instead
-	std::map<std::string, CommandCreator>::iterator it = commands.find(commandName);
+	std::map<std::string, CommandCreator*>::iterator it = commands.find(commandName);
 	if (it != commands.end()) {
-		return it->second();
+		return (*(it->second))();
 	}
 	return NULL;
-}
-
-CommandPtr CommandFactory::createPassCommand() {
-	return new PassCommand();
-}
-
-CommandPtr CommandFactory::createNickCommand() {
-	return new NickCommand();
-}
-
-CommandPtr CommandFactory::createUserCommand() {
-	return new UserCommand();
 }
