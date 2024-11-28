@@ -3,7 +3,7 @@
 
 // ++++Constructor
 Client::Client(int fd, const std::string& correctPassword) 
-					: _clientFd(fd), _authenticated(false), _correctPassword(correctPassword) {
+					: _clientFd(fd), _authenticated(false), _capNegotiation(false), _correctPassword(correctPassword) {
 	if (DEBUG) {
 		std::cout << "Client parameter constructor called" << std::endl;
 	}

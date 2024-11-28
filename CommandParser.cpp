@@ -25,6 +25,7 @@ void CommandParser::parseAndExecute(Client& client, const std::string& message) 
 	std::cout << "Args in ascii: ";
 	Utils::printAsciiDecimal(args);
 	std::cout << "Client AUTH: " << client.isAuthenticated() << std::endl;
+	std::cout << "Cap Negotiation: " << client.isCapNegotiation() << std::endl;
 
 	CommandPtr command = commandFactory->createCommand(commandName);
 	if (command) {

@@ -22,9 +22,9 @@ class Client {
 		bool		_capNegotiation;
 		//todo: add attribute of participating channels
 		std::string _correctPassword;
+		bool		_isOperator;
 
 	public:
-		// Client(void);
 		Client(int fd, const std::string& correctPassword);
 		// Client(const Client &other);
 		// Client &operator=(const Client &other);

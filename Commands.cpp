@@ -19,11 +19,12 @@ void Command::execute(Client& client, const std::string& args) {
 				sendReplyOrError(client.getFd(), response);
 				client.setCapNegotiation(true);
 				std::cout << "Client AUTH in execute: " << client.isAuthenticated() << std::endl;
+				std::cout << "Client CAP Negotiation in execute: " << client.isCapNegotiation() << std::endl;
 			}
 			if (subcommand == "END" && client.isCapNegotiation()) {
 				client.setCapNegotiation(false);
 				std::cout << "Client AUTH in execute: " << client.isAuthenticated() << std::endl;
-
+				std::cout << "Client CAP Negotiation in execute: " << client.isCapNegotiation() << std::endl;
 			}
 		}
 		break;
@@ -94,10 +95,12 @@ void Command::execute(Client& client, const std::string& args) {
 				return ;
 			}
 
-			if (client.isAuthenticated()) {
-				std::string response = ERR_ALREADYREGISTERED;
-				sendReplyOrError(client.getFd(), response);
-				return ;
+			for (std::map<int, Client*>::iterator it = connections.begin(); it != connections.end(); it++) {
+				if (it->second->getUser() == userName || !client.isCapNegotiation()) {
+					std::string response = ERR_ALREADYREGISTERED;
+					sendReplyOrError(client.getFd(), response);
+					return ;
+				}
 			}
 
 			client.setUser(userName);
@@ -114,7 +117,7 @@ void Command::execute(Client& client, const std::string& args) {
 			getline(stream, reason);
 			reason = Utils::trim(reason);
 			if (reason.empty()) {
-				response = "Quit:";
+				response = "Quit";
 				std::cout << response << std::endl;
 			} else {
 				response = RPL_QUIT(reason);
